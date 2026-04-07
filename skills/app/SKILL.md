@@ -1,0 +1,1 @@
+Identify the active SKILL by looking at the main active application window (the taskbar (bottom), window title bars (top), and overall UI layout). Then write the best matching ID from the skill registry, if it's a generic desktop with no main window, use 'app/desktop'.

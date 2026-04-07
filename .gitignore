@@ -1,0 +1,8 @@
+node_modules
+dist/
+.env
+images/*
+logs/*
+.storage/
+missions/*/logs/
+.tmp/

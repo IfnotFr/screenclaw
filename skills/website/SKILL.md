@@ -1,0 +1,1 @@
+Identify which website is currently open in the browser by checking the URL in the address bar at the top, the logo in the top-left area of the page content, or the favicon in the tab bar. Choose the best ID from the registry. If there is no match or you are not sure, return none.
