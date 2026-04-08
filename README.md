@@ -7,14 +7,14 @@
 
 # Screen Claw
 
-**NodeJS Autonomous AI Desktop Agent(s)** for Screen Automation using **custom SKILLS** and optimized for **local Computer Vision** with OpenAI API compatibility (Ollama, LM Studio, LocalAI, vLLM, etc.).
+NodeJS Screen Automation Agent(s) using custom SKILLS and optimized for local Computer Vision with OpenAI API compatibility (Ollama, LM Studio, LocalAI, vLLM, etc.).
 
 **No cloud subscription needed. Turn your gaming PC into a automated productivity tool for "free".**
 
 Tested with:
-* Qwen3.5-9B (8gb VRAM)
+* `Qwen3.5-9B` (8gb VRAM)
   - A good balance between performance and quality
-* Qwen3.5-35B-A3B (24gb VRAM)
+* `Qwen3.5-35B-A3B` (24gb VRAM)
   - Powerfull and very fast
 
 ## Quick start
