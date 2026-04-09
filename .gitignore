@@ -6,3 +6,4 @@ logs/*
 .storage/
 missions/*/logs/
 .tmp/
+*.md
