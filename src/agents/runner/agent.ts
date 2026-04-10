@@ -1,5 +1,5 @@
 import { ToolLoopAgent } from "ai";
-import { useModel } from "#/core/index.js";
+import { getModel } from "#/core/index.js";
 import { inspectStateTool } from "./tools/inspect-state.js";
 
 /**
@@ -7,7 +7,7 @@ import { inspectStateTool } from "./tools/inspect-state.js";
  * Orchestrates discovery and execution via separate Inspection and Query tools.
  */
 export const runnerAgent = new ToolLoopAgent({
-  model: useModel().get(),
+  model: getModel(),
   instructions: `### MISSION
 You are the Runner. Your job is to orchestrate execution by observing the environment and delegating focused actions to the 'computer'.
 

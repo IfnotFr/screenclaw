@@ -2,7 +2,7 @@ import { Router } from "express";
 
 export const schedulerRouter = Router();
 
-// State shared with run-server.ts via this module
+// State shared with server.ts via this module
 export const schedulerState = {
   running: false,
   lastRun: null as string | null,

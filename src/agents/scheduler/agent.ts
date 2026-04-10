@@ -1,11 +1,11 @@
 import { ToolLoopAgent } from "ai";
-import { useModel } from "#/core/index.js";
+import { getModel } from "#/core/index.js";
 import { scanMissionsTool } from "./tools/scan-missions.js";
 import { readMissionTool } from "./tools/read-mission.js";
 import { updateMissionLogTool } from "./tools/update-mission-log.js";
 
 export const schedulerAgent = new ToolLoopAgent({
-  model: useModel().get(),
+  model: getModel(),
   instructions: `### MISSION
 Strategic Orchestrator. You decide IF and WHEN to launch missions based on mission files and historical logs.
 

@@ -16,8 +16,7 @@
     "#/*": "./src/*.js"
   },
   "scripts": {
-    "dev": "npm run dev:server & npm run dev:admin",
-    "dev:server": "tsx src/cli.ts",
+    "dev": "tsx src/cli.ts",
     "dev:admin": "cd src/admin && npm run dev",
     "agent": "tsx src/run-agent.ts",
     "build:admin": "cd src/admin && npm run build",
@@ -28,17 +27,14 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
     "@clack/prompts": "^1.2.0",
-    "@types/screenshot-desktop": "^1.15.0",
     "ai": "^6.0.116",
-    "ai-sdk-agentic": "file:../ai-sdk-agentic/packages/core",
-    "ai-sdk-office-server": "file:../ai-sdk-agentic/packages/ai-sdk-office-server",
+    "ai-sdk-agentic": "^1.0.1",
     "boxen": "^8.0.1",
     "canvas": "^3.1.0",
     "chalk": "^5.6.2",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "node-cron": "^4.2.1",
-    "screenshot-desktop": "^1.15.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

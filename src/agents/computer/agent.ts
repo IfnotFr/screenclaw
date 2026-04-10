@@ -1,5 +1,5 @@
 import { ToolLoopAgent } from "ai";
-import { useModel } from "#/core/index.js";
+import { getModel } from "#/core/index.js";
 import { mouseClickTool } from "./tools/mouse-click.js";
 import { mouseRightClickTool } from "./tools/mouse-right-click.js";
 import { mouseDoubleClickTool } from "./tools/mouse-double-click.js";
@@ -34,7 +34,7 @@ Expert operator controlling a desktop environment via raw mouse and keyboard act
  * Expert operator controlling the OS via mouse and keyboard.
  */
 export const computerAgent = new ToolLoopAgent({
-  model: useModel().get(),
+  model: getModel(),
   instructions: COMPUTER_INSTRUCTIONS,
   tools: {
     getItemCoordinates: getItemCoordinatesTool,

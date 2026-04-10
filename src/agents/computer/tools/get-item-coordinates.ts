@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { useImage, useComputer } from "#/core/index.js";
+import { useImage, useComputer, logger } from "#/core/index.js";
 
 /**
  * Tool: Get Item Coordinates
@@ -29,11 +29,9 @@ export const getItemCoordinatesTool = tool({
       return { status: "error", message: `Element "${goal}" not found.` };
     }
 
-    try {
-      const x = foundItem.centerX - foundItem.width / 2;
-      const y = foundItem.centerY - foundItem.height / 2;
-      await computer.highlightRegion(x, y, foundItem.width, foundItem.height);
-    } catch (e) {}
+    const x = foundItem.centerX - foundItem.width / 2;
+    const y = foundItem.centerY - foundItem.height / 2;
+    await computer.highlightRegion(x, y, foundItem.width, foundItem.height);
 
     return {
       status: "success",

@@ -25,12 +25,8 @@ function withPostHandoffSync() {
       const result = await proceed();
       if (toolName !== "handoff" && !isFirstInspect) return result;
 
-      try {
-        const skillContext = await useSkill().sync();
-        if (skillContext) return `${result}\n\n[SKILL CONTEXT UPDATED]${skillContext}`;
-      } catch (e: any) {
-        logger.error(`Skill sync failed: ${e.message}`);
-      }
+      const skillContext = await useSkill().sync();
+      if (skillContext) return `${result}\n\n[SKILL CONTEXT UPDATED]${skillContext}`;
 
       return result;
     },

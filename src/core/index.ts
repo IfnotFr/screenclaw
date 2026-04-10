@@ -1,9 +1,9 @@
 import { useEvents } from "ai-sdk-agentic";
 
+export * from "./config.js";
 export * from "./utils/use-model.js";
 export * from "./utils/use-storage.js";
 export * from "./plugins/storage.js";
-export * from "./config.js";
 export * from "./utils/use-image.js";
 export * from "./utils/use-computer.js";
 export * from "./utils/use-skill.js";

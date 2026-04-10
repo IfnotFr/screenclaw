@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { streamText, Output } from "ai";
 import { z } from "zod";
 import { useMission } from "ai-sdk-agentic";
-import { useComputer, useModel, logger } from "#/core/index.js";
+import { useComputer, getModel, logger } from "#/core/index.js";
 
 export function useSkill() {
   const rootSkillsDir = path.join(process.cwd(), "skills");
@@ -30,15 +30,12 @@ export function useSkill() {
 
   async function getRegistry(type: string): Promise<{ id: string, description: string }[]> {
     const ids = await list(type);
-    const registry = [];
-    for (const id of ids) {
-      const skill = await get(id);
-      if (skill) {
-        const description = skill.raw.match(/description:\s*"?([^"\n]+)"?/)?.[1] || "";
-        registry.push({ id, description });
-      }
-    }
-    return registry;
+    const skills = await Promise.all(ids.map(get));
+    return skills.flatMap((skill, i) => {
+      if (!skill) return [];
+      const description = skill.raw.match(/description:\s*"?([^"\n]+)"?/)?.[1] || "";
+      return [{ id: ids[i], description }];
+    });
   }
 
   async function getCategoryGuide(type: string): Promise<string> {
@@ -88,7 +85,7 @@ export function useSkill() {
     logger.log("🔄 Sync Skills: Detecting active context...", { level: 0 });
 
     const screenshot = await useComputer().takeScreenshot();
-    const model = useModel().get();
+    const model = getModel();
 
     // --- DETECT APP ---
     const appResult = streamText({

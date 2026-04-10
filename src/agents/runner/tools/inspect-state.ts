@@ -1,6 +1,6 @@
 import { tool, streamText, Output } from "ai";
 import { z } from "zod";
-import { useComputer, useMission, useModel, logger } from "#/core/index.js";
+import { useComputer, useMission, getModel, logger } from "#/core/index.js";
 
 /**
  * Tool: Inspect State
@@ -18,7 +18,7 @@ export const inspectStateTool = tool({
     try {
       const computer = useComputer();
       const { context } = useMission();
-      const model = useModel().get();
+      const model = getModel();
 
       const screenshot = await computer.takeScreenshot();
       const lastStateDescription = context.lastStateDescription as string | null;

@@ -1,9 +1,10 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { createCanvas, loadImage } from "canvas";
-import screenshot from "screenshot-desktop";
 import { config } from "#/core/config.js";
 import { logger } from "#/core/index.js";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import type { OS } from "./os.js";
 
@@ -54,7 +55,50 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function parseXrandrDisplays() {
+  const output = execSync("xrandr --query", { encoding: "utf8" });
+  const displays: Array<{ id: string; width: number; height: number; x: number; y: number; primary: boolean }> = [];
+  for (const line of output.split("\n")) {
+    const match = line.match(/^(\S+) connected (primary )?(\d+)x(\d+)\+(\d+)\+(\d+)/);
+    if (match) {
+      displays.push({
+        id: match[1],
+        primary: !!match[2],
+        width: parseInt(match[3]),
+        height: parseInt(match[4]),
+        x: parseInt(match[5]),
+        y: parseInt(match[6]),
+      });
+    }
+  }
+  return displays;
+}
+
 export const linux: OS = {
+  setupDisplay() {
+    if (!process.env.DISPLAY) process.env.DISPLAY = ":0";
+    if (!process.env.XAUTHORITY) {
+      try {
+        const xpid = execSync("pgrep -x Xorg || pgrep -x Xwayland", { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] }).trim().split("\n")[0];
+        if (xpid) {
+          const env = execSync(`cat /proc/${xpid}/environ`, { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] });
+          const match = env.split("\0").find(e => e.startsWith("XAUTHORITY="));
+          if (match) { process.env.XAUTHORITY = match.slice("XAUTHORITY=".length); return; }
+        }
+      } catch {}
+      const uid = process.getuid?.();
+      if (uid !== undefined && existsSync(`/run/user/${uid}/Xauthority`)) {
+        process.env.XAUTHORITY = `/run/user/${uid}/Xauthority`; return;
+      }
+      const home = process.env.HOME;
+      if (home && existsSync(`${home}/.Xauthority`)) process.env.XAUTHORITY = `${home}/.Xauthority`;
+    }
+  },
+
+  async listDisplays() {
+    return parseXrandrDisplays();
+  },
+
   toScreenAbsolute(x, y) {
     return { x: config.screen.xOffset + x, y: config.screen.yOffset + y };
   },
@@ -67,9 +111,15 @@ export const linux: OS = {
   },
 
   async takeScreenshot() {
-    const buffer = await screenshot({ format: "png", screen: config.screen.id });
+    const displays = parseXrandrDisplays();
+    const display = displays.find(d => d.id === config.screen.id) ?? displays[0];
 
-    const originalImg = await loadImage(buffer);
+    const tmpFile = path.join(os.tmpdir(), `screenclaw-${Date.now()}.png`);
+    execFileSync("scrot", ["-a", `${display.x},${display.y},${display.width},${display.height}`, tmpFile]);
+    const raw = await fs.readFile(tmpFile);
+    await fs.unlink(tmpFile).catch(() => {});
+
+    const originalImg = await loadImage(raw);
     const targetW = Math.ceil(originalImg.width / MULTIPLE) * MULTIPLE;
     const targetH = Math.ceil(originalImg.height / MULTIPLE) * MULTIPLE;
 

@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import { createCanvas, loadImage } from "canvas";
-import { useModel, ImageItem, logger } from "#/core/index.js";
+import { getModel, ImageItem, logger } from "#/core/index.js";
 
 /**
  * useImage: Hook-style utility for visual analysis and element grounding.
@@ -50,7 +50,7 @@ export function useImage() {
     async assert(assertion: string, imageBefore: Buffer, imageAfter: Buffer): Promise<boolean> {
       logger.log(`🔍 Assert Image: "${assertion}"`);
       const { textStream, output } = await streamText({
-        model: useModel().get(),
+        model: getModel(),
         messages: [
           {
             role: "user",
@@ -80,7 +80,7 @@ export function useImage() {
       const { buffer, originalW, originalH } = await this.prepare(image);
 
       const { textStream, output } = await streamText({
-        model: useModel().get(),
+        model: getModel(),
         maxOutputTokens: 20,
         messages: [
           {
@@ -119,7 +119,7 @@ export function useImage() {
     async runTask(image: Buffer, task: string): Promise<string> {
       logger.log(`🔍 Running Image Task ...`);
       const { textStream, output } = await streamText({
-        model: useModel().get(),
+        model: getModel(),
         messages: [
           {
             role: "user",

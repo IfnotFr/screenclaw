@@ -1,4 +1,6 @@
 export interface OS {
+  setupDisplay(): void;
+  listDisplays(): Promise<{ id: string; width: number; height: number; x: number; y: number; primary: boolean }[]>;
   toScreenAbsolute(x: number, y: number): { x: number; y: number };
   toScreenRelative(absoluteX: number, absoluteY: number): { x: number; y: number };
   takeScreenshot(): Promise<Buffer>;
