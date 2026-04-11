@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { streamText, Output } from "ai";
+import { streamText, Output, generateText } from "ai";
 import { z } from "zod";
 import { useMission } from "ai-sdk-agentic";
 import { useComputer, getModel, logger } from "#/core/index.js";
@@ -82,25 +82,25 @@ export function useSkill() {
     const primaryBefore = context.primarySkill as string | null;
     const secondaryBefore = context.secondarySkill as string | null;
 
-    logger.log("🔄 Sync Skills: Detecting active context...", { level: 0 });
+    logger.log("💡 Sync Skills: Detecting active context...");
 
     const screenshot = await useComputer().takeScreenshot();
     const model = getModel();
 
     // --- DETECT APP ---
-    const appResult = streamText({
+    const { appId: detectedApp } = generateText({
       model,
       output: Output.object({ schema: z.object({ appId: z.string().nullable() }) }),
-      messages: [{ role: "user", content: [
-        { type: "text", text: `IDENTIFY APP:\n${await getCategoryGuide("app")}\n\nAVAILABLE APPS:\n${(await getRegistry("app")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
-        { type: "image", image: screenshot },
-      ]}],
-    });
-    await logger.chat(appResult.textStream);
-    const { appId: detectedApp } = await appResult.output;
+      messages: [{
+        role: "user", content: [
+          { type: "text", text: `IDENTIFY APP:\n${await getCategoryGuide("app")}\n\nAVAILABLE APPS:\n${(await getRegistry("app")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
+          { type: "image", image: screenshot },
+        ]
+      }],
+    }) as any
 
     if (detectedApp !== primaryBefore) {
-      logger.log(`📱 App transition: ${primaryBefore || "none"} -> ${detectedApp || "none"}`);
+      logger.log(`💡 SKILL: ${primaryBefore || "none"} -> ${detectedApp || "none"}`);
       if (primaryBefore) await disable(primaryBefore);
       if (secondaryBefore) await disable(secondaryBefore);
       if (detectedApp) await enable(detectedApp);
@@ -113,16 +113,18 @@ export function useSkill() {
       const webResult = streamText({
         model,
         output: Output.object({ schema: z.object({ websiteId: z.string().nullable() }) }),
-        messages: [{ role: "user", content: [
-          { type: "text", text: `IDENTIFY WEBSITE:\n${await getCategoryGuide("website")}\n\nAVAILABLE WEBSITES:\n${(await getRegistry("website")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
-          { type: "image", image: screenshot },
-        ]}],
+        messages: [{
+          role: "user", content: [
+            { type: "text", text: `IDENTIFY WEBSITE:\n${await getCategoryGuide("website")}\n\nAVAILABLE WEBSITES:\n${(await getRegistry("website")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
+            { type: "image", image: screenshot },
+          ]
+        }],
       });
       await logger.chat(webResult.textStream);
       const { websiteId: detectedWeb } = await webResult.output;
 
       if (detectedWeb !== secondaryBefore) {
-        logger.log(`🌐 Context transition: ${secondaryBefore || "none"} -> ${detectedWeb || "none"}`);
+        logger.log(`💡 SUB-SKILL: ${secondaryBefore || "none"} -> ${detectedWeb || "none"}`);
         if (secondaryBefore) await disable(secondaryBefore);
         if (detectedWeb) await enable(detectedWeb);
         context.secondarySkill = detectedWeb;
@@ -136,8 +138,8 @@ export function useSkill() {
     let instructions = "";
     const primary = await get(primaryAfter as string);
     const secondary = await get(secondaryAfter as string);
-    if (primary) instructions += `\n--- PRIMARY APP GUIDE (${primaryAfter}) ---\n${primary.content}\n`;
-    if (secondary) instructions += `\n--- SECONDARY CONTEXT GUIDE (${secondaryAfter}) ---\n${secondary.content}\n`;
+    if (primary) instructions += `\n--- PRIMARY SKILL GUIDE (${primaryAfter}) ---\n${primary.content}\n`;
+    if (secondary) instructions += `\n--- SECONDARY SKILL GUIDE (${secondaryAfter}) ---\n${secondary.content}\n`;
     return instructions || null;
   }
 

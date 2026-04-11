@@ -2,7 +2,7 @@ import { computerAgent, COMPUTER_INSTRUCTIONS } from "./agents/computer/agent.js
 import { schedulerAgent } from "./agents/scheduler/agent.js";
 import { runnerAgent } from "./agents/runner/agent.js";
 import { configureAgent, withConsoleLogger, withHandoff } from "ai-sdk-agentic";
-import { withStorage, useSkill, logger } from "#/core/index.js";
+import { withStorage, useSkill } from "#/core/index.js";
 import { useMission } from "ai-sdk-agentic";
 
 function withVisualAnchors() {
@@ -36,19 +36,19 @@ function withPostHandoffSync() {
 export const computer = configureAgent(computerAgent, [
   withStorage(),
   withVisualAnchors(),
-  withConsoleLogger({ name: "Computer", color: "blue" }),
+  withConsoleLogger({ name: "Computer", color: "blue", hideToolResult: true }),
 ]);
 
 export const runner = configureAgent(runnerAgent, [
   withStorage(),
-  withConsoleLogger({ name: "Runner", color: "green" }),
+  withConsoleLogger({ name: "Runner", color: "green", hideToolResult: true }),
   withHandoff([{ name: "computer", agent: computer, mode: "stream" }]),
   withPostHandoffSync(),
 ]);
 
 export const scheduler = configureAgent(schedulerAgent, [
   withStorage(),
-  withConsoleLogger({ name: "Scheduler", color: "cyan" }),
+  withConsoleLogger({ name: "Scheduler", color: "cyan", hideToolResult: true }),
   withHandoff([{ name: "runner", agent: runner, mode: "stream" }]),
 ]);
 
