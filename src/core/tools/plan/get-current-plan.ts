@@ -14,6 +14,7 @@ export const getCurrentPlanTool = tool({
   execute: async () => {
     try {
       const storage = useStorage();
+      if (!storage) throw new Error("Storage not available.");
       const plan = await storage.readMemory();
       return { 
         status: "success", 

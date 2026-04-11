@@ -6,13 +6,17 @@ import { useMission } from "ai-sdk-agentic";
  * useStorage: Hook-style utility to interact with mission data.
  */
 export function useStorage() {
-  const { id, context } = useMission();
-  const missionPath = context.storagePath as string;
-  const logFileName = context.logFileName as string;
-
-  if (!missionPath) {
-    throw new Error("useStorage must be used within an agent configured with withStorage.");
+  let id: string, context: Record<string, unknown>;
+  try {
+    ({ id, context } = useMission());
+  } catch {
+    return null;
   }
+
+  const missionPath = context.storagePath as string | undefined;
+  const logFileName = context.logFileName as string | undefined;
+
+  if (!missionPath || !logFileName) return null;
 
   return {
     path: missionPath,

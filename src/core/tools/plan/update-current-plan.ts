@@ -16,6 +16,7 @@ export const updateCurrentPlanTool = tool({
   execute: async ({ markdown }: z.infer<typeof inputSchema>) => {
     try {
       const storage = useStorage();
+      if (!storage) throw new Error("Storage not available.");
       await storage.writeMemory(markdown);
       return { status: "success", message: "Memory updated." };
     } catch (e: any) {
