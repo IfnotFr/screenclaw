@@ -13,8 +13,13 @@ import {
   getUinputFd, emitEvent, syncDevice, toAbs, pressKey, delay,
   uinputWritable, UINPUT_SETUP_CMD,
 } from "./uinput.js";
-import { typeChar, resolveKeyCode } from "./keyboard.js";
-import { takeScreenshot, captureViaPortal, portalAvailable, DEPS } from "./screenshot.js";
+import { resolveKeyCode } from "./keyboard.js";
+import { takeScreenshot, captureViaPortal, portalAvailable, DEPS, which } from "./screenshot.js";
+
+const CLIPBOARD_DEPS = {
+  wlCopy: { name: "wl-copy", installCmd: "sudo apt install -y wl-clipboard", available: () => which("wl-copy") },
+  xclip:  { name: "xclip",   installCmd: "sudo apt install -y xclip",        available: () => which("xclip") },
+};
 
 export const linux: OS = {
   async setup() {
@@ -71,15 +76,15 @@ export const linux: OS = {
           `    Run: sudo apt install -y xdg-desktop-portal xdg-desktop-portal-gnome  # or -kde, -gtk`,
         );
       }
-      if (!DEPS.wlCopy.available()) {
-        errors.push(`  - ${DEPS.wlCopy.name} missing: ${DEPS.wlCopy.installCmd}`);
+      if (!CLIPBOARD_DEPS.wlCopy.available()) {
+        errors.push(`  - ${CLIPBOARD_DEPS.wlCopy.name} missing: ${CLIPBOARD_DEPS.wlCopy.installCmd}`);
       }
     } else {
       if (!DEPS.scrot.available()) {
         errors.push(`  - ${DEPS.scrot.name} missing: ${DEPS.scrot.installCmd}`);
       }
-      if (!DEPS.xclip.available()) {
-        errors.push(`  - ${DEPS.xclip.name} missing: ${DEPS.xclip.installCmd}`);
+      if (!CLIPBOARD_DEPS.xclip.available()) {
+        errors.push(`  - ${CLIPBOARD_DEPS.xclip.name} missing: ${CLIPBOARD_DEPS.xclip.installCmd}`);
       }
     }
 
