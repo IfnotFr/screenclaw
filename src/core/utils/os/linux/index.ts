@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -71,9 +71,15 @@ export const linux: OS = {
           `    Run: sudo apt install -y xdg-desktop-portal xdg-desktop-portal-gnome  # or -kde, -gtk`,
         );
       }
+      if (!DEPS.wlCopy.available()) {
+        errors.push(`  - ${DEPS.wlCopy.name} missing: ${DEPS.wlCopy.installCmd}`);
+      }
     } else {
       if (!DEPS.scrot.available()) {
         errors.push(`  - ${DEPS.scrot.name} missing: ${DEPS.scrot.installCmd}`);
+      }
+      if (!DEPS.xclip.available()) {
+        errors.push(`  - ${DEPS.xclip.name} missing: ${DEPS.xclip.installCmd}`);
       }
     }
 
@@ -189,11 +195,23 @@ export const linux: OS = {
 
   async keyboardTypeText(text) {
     logger.log(`⌨️  Type text : "${text}"`);
-    const fd = await getUinputFd();
-    for (const char of text) {
-      typeChar(fd, char);
-      await delay(20);
+
+    // Write text to clipboard (layout-agnostic, supports full Unicode)
+    if (process.env.WAYLAND_DISPLAY) {
+      execFileSync("wl-copy", [], { input: text });
+    } else {
+      execFileSync("xclip", ["-selection", "clipboard"], { input: text });
     }
+
+    // Paste via Ctrl+V
+    const fd = await getUinputFd();
+    const KEY_LEFTCTRL = 29;
+    const KEY_V = 47;
+    emitEvent(fd, EV_KEY, KEY_LEFTCTRL, 1); syncDevice(fd);
+    emitEvent(fd, EV_KEY, KEY_V, 1);        syncDevice(fd);
+    await delay(50);
+    emitEvent(fd, EV_KEY, KEY_V, 0);        syncDevice(fd);
+    emitEvent(fd, EV_KEY, KEY_LEFTCTRL, 0); syncDevice(fd);
     await delay(200);
   },
 

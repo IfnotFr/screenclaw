@@ -15,7 +15,9 @@ export function which(bin: string): boolean {
 }
 
 export const DEPS = {
-  scrot: { name: "scrot", installCmd: "sudo apt install -y scrot", available: () => which("scrot") },
+  scrot:  { name: "scrot",   installCmd: "sudo apt install -y scrot",        available: () => which("scrot") },
+  wlCopy: { name: "wl-copy", installCmd: "sudo apt install -y wl-clipboard", available: () => which("wl-copy") },
+  xclip:  { name: "xclip",   installCmd: "sudo apt install -y xclip",        available: () => which("xclip") },
 } satisfies Record<string, Dependency>;
 
 export function portalAvailable(): boolean {
