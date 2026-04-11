@@ -6,7 +6,7 @@ async function main() {
 
   const args = process.argv.slice(2);
 
-  let agentKey: AgentRole = "runner";
+  let agentKey: AgentRole = "director";
   let prompt = "";
 
   if (args.length === 1) {
@@ -24,14 +24,14 @@ async function main() {
   if (!prompt) {
     console.log("\x1b[31m%s\x1b[0m", "Error: No prompt provided.");
     console.log(
-      'Usage: npm run agent [runner|computer|scheduler] "Your prompt"',
+      'Usage: npm run agent [director|runner|computer|scheduler] "Your prompt"',
     );
     process.exit(1);
   }
 
   const agent = agents[agentKey];
 
-  console.log(`--- 🤖 Agentic CLI (${agentKey.toUpperCase()} Mode) ---`);
+  console.log(`--- 🤖 Agentic CLI (${agentKey.toUpperCase()}) ---`);
   console.log(`🚀 Task: "${prompt}"\n`);
 
   // Mission ID for storage directory naming

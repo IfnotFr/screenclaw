@@ -1,6 +1,7 @@
 import { computerAgent, COMPUTER_INSTRUCTIONS } from "./agents/computer/agent.js";
 import { schedulerAgent } from "./agents/scheduler/agent.js";
 import { runnerAgent } from "./agents/runner/agent.js";
+import { directorAgent } from "./agents/director/agent.js";
 import { configureAgent, withConsoleLogger, withHandoff } from "ai-sdk-agentic";
 import { withStorage, useSkill } from "#/core/index.js";
 import { useMission } from "ai-sdk-agentic";
@@ -52,7 +53,14 @@ export const scheduler = configureAgent(schedulerAgent, [
   withHandoff([{ name: "runner", agent: runner, mode: "stream" }]),
 ]);
 
+export const director = configureAgent(directorAgent, [
+  withStorage(),
+  withConsoleLogger({ name: "Director", color: "magenta", hideToolResult: true }),
+  withHandoff([{ name: "runner", agent: runner, mode: "stream" }]),
+]);
+
 export const agents = {
+  director,
   runner,
   computer,
   scheduler,
