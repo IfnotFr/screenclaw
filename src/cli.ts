@@ -62,23 +62,9 @@ async function onboard(cwd: string): Promise<void> {
   }
 
   try {
-    execSync("which xdotool", { stdio: "ignore" });
-  } catch {
-    p.log.error("Missing dependency: xdotool\nRun: sudo apt install -y xdotool");
-    process.exit(1);
-  }
-
-  try {
-    execSync("which xrandr", { stdio: "ignore" });
-  } catch {
-    p.log.error("Missing dependency: xrandr\nRun: sudo apt install -y x11-xserver-utils");
-    process.exit(1);
-  }
-
-  try {
-    execSync("which scrot", { stdio: "ignore" });
-  } catch {
-    p.log.error("Missing dependency: scrot\nRun: sudo apt install -y scrot");
+    await useComputer().setup();
+  } catch (e: any) {
+    p.log.error(e.message);
     process.exit(1);
   }
 
@@ -161,28 +147,6 @@ async function onboard(cwd: string): Promise<void> {
               validate: v => !v ? "Required" : undefined,
             });
           },
-          screenId: async () => {
-            const computer = useComputer();
-            computer.setupDisplay(); // needed before dotenv loads
-            try {
-              const displays = await computer.listDisplays();
-              return p.select({
-                message: "Select screen to capture",
-                options: displays.map(d => ({
-                  value: d.id,
-                  label: d.id,
-                  hint: `${d.width}x${d.height}${d.primary ? " · primary" : ""}`,
-                })),
-              });
-            } catch {
-              p.log.warn("Could not detect displays (no X display reachable). Enter the screen ID manually.");
-              return p.text({
-                message: "Screen ID",
-                placeholder: "0",
-                defaultValue: "0",
-              });
-            }
-          },
         },
         { onCancel: () => { p.cancel("Setup cancelled."); process.exit(0); } }
       );
@@ -192,7 +156,6 @@ async function onboard(cwd: string): Promise<void> {
         `LLM_SERVER_URL=${values.llmServerUrl}`,
         `MODEL_ID=${values.modelId}`,
         `SCHEDULER_CRON=${values.schedulerCron || "* * * * *"}`,
-        `SCREEN_ID=${values.screenId || ""}`,
       ].join("\n") + "\n";
 
       await fs.writeFile(join(cwd, ".env"), envContent);

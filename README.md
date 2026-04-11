@@ -25,8 +25,8 @@ npx screen-claw
 
 ## Requirements
 
-- **OS**: Linux X11 with `xdotool` (Linux Wayland, Windows and MacOS support coming soon)
-- **Node.js**: v20+
+- **OS**: Linux (X11 and Wayland supported)
+- **Node.js**: v20+ (requires `build-essential` for native addon compilation: `sudo apt install -y build-essential`)
 - **OpenAI-compatible API**: Ollama, LM Studio, LocalAI, vLLM, etc.
 
 ### Hardware
@@ -91,7 +91,6 @@ description: "Gmail: Left sidebar with 'Compose' button and folders. Central lis
 | `ADMIN_PORT` | `3010` | Port for the admin panel |
 | `LLM_SERVER_URL` | `http://localhost:4000` | Base URL of your LLM server (`/v1` is appended automatically) |
 | `MODEL_ID` | — | Model name to use (e.g. `qwen3.5-9b`) |
-| `SCREEN_ID` | — | Display ID to capture (listed on first start if unset) |
 | `SCHEDULER_CRON` | `* * * * *` | Cron expression for the scheduler frequency |
 
 ## Development

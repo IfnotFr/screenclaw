@@ -1,6 +1,6 @@
+import "dotenv/config";
 import { useEvents } from "ai-sdk-agentic";
 
-export * from "./config.js";
 export * from "./utils/use-model.js";
 export * from "./utils/use-storage.js";
 export * from "./plugins/storage.js";

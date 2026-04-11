@@ -1,8 +1,6 @@
 export interface OS {
-  setupDisplay(): void;
-  listDisplays(): Promise<{ id: string; width: number; height: number; x: number; y: number; primary: boolean }[]>;
-  toScreenAbsolute(x: number, y: number): { x: number; y: number };
-  toScreenRelative(absoluteX: number, absoluteY: number): { x: number; y: number };
+  /** Configures the display environment and checks/grants all requirements. */
+  setup(): Promise<void>;
   takeScreenshot(): Promise<Buffer>;
   highlightRegion(x: number, y: number, w: number, h: number): Promise<void>;
   mouseClick(x: number, y: number): Promise<void>;
