@@ -17,12 +17,13 @@ export function useSkill() {
     }
   }
 
-  async function get(fullId: string): Promise<{ id: string, content: string, raw: string } | null> {
+  async function get(fullId: string): Promise<{ id: string, content: string, raw: string, subtype: string | null } | null> {
     try {
       const [type, name] = fullId.split("/");
       if (!type || !name) return null;
       const raw = await fs.readFile(path.join(rootSkillsDir, type, name, "SKILL.md"), "utf-8");
-      return { id: fullId, raw, content: raw.replace(/^---[\s\S]*?---/, "").trim() };
+      const subtype = raw.match(/^subtype:\s*(\S+)/m)?.[1] ?? null;
+      return { id: fullId, raw, content: raw.replace(/^---[\s\S]*?---/, "").trim(), subtype };
     } catch {
       return null;
     }
@@ -79,67 +80,75 @@ export function useSkill() {
 
   async function sync(): Promise<string | null> {
     const { context } = useMission();
-    const primaryBefore = context.primarySkill as string | null;
-    const secondaryBefore = context.secondarySkill as string | null;
+    const level1Before = context.level1Skill as string | null;
+    const level2Before = context.level2Skill as string | null;
 
     logger.log("💡 Sync Skills: Detecting active context...");
 
     const screenshot = await useComputer().takeScreenshot();
     const model = getModel();
 
-    // --- DETECT APP ---
-    const { appId: detectedApp } = generateText({
+    // --- DETECT LEVEL 1 (app) ---
+    const appResult = await generateText({
       model,
-      output: Output.object({ schema: z.object({ appId: z.string().nullable() }) }),
+      output: Output.object({ schema: z.object({ skillId: z.string().nullable() }) }),
       messages: [{
         role: "user", content: [
           { type: "text", text: `IDENTIFY APP:\n${await getCategoryGuide("app")}\n\nAVAILABLE APPS:\n${(await getRegistry("app")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
           { type: "image", image: screenshot },
         ]
       }],
-    }) as any
+    });
+    const { skillId: detectedLevel1 } = appResult.output;
 
-    if (detectedApp !== primaryBefore) {
-      logger.log(`💡 SKILL: ${primaryBefore || "none"} -> ${detectedApp || "none"}`);
-      if (primaryBefore) await disable(primaryBefore);
-      if (secondaryBefore) await disable(secondaryBefore);
-      if (detectedApp) await enable(detectedApp);
-      context.primarySkill = detectedApp;
-      context.secondarySkill = null;
+    if (detectedLevel1 !== level1Before) {
+      logger.log(`  - SKILL L1: ${level1Before || "none"} -> ${detectedLevel1 || "none"}`);
+      if (level1Before) await disable(level1Before);
+      if (level2Before) await disable(level2Before);
+      if (detectedLevel1) await enable(detectedLevel1);
+      context.level1Skill = detectedLevel1;
+      context.level2Skill = null;
     }
 
-    // --- DETECT WEBSITE (only if browser is active) ---
-    if (context.primarySkill === "app/browser") {
-      const webResult = streamText({
+    // --- DETECT LEVEL 2 (if the active level-1 skill declares a subtype) ---
+    const level1Skill = detectedLevel1 ? await get(detectedLevel1) : null;
+    const subtype = level1Skill?.subtype ?? null;
+
+    if (subtype) {
+      const subResult = streamText({
         model,
-        output: Output.object({ schema: z.object({ websiteId: z.string().nullable() }) }),
+        output: Output.object({ schema: z.object({ skillId: z.string().nullable() }) }),
         messages: [{
           role: "user", content: [
-            { type: "text", text: `IDENTIFY WEBSITE:\n${await getCategoryGuide("website")}\n\nAVAILABLE WEBSITES:\n${(await getRegistry("website")).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
+            { type: "text", text: `IDENTIFY ${subtype.toUpperCase()}:\n${await getCategoryGuide(subtype)}\n\nAVAILABLE:\n${(await getRegistry(subtype)).map(s => `- ${s.id}: ${s.description}`).join("\n")}` },
             { type: "image", image: screenshot },
           ]
         }],
       });
-      await logger.chat(webResult.textStream);
-      const { websiteId: detectedWeb } = await webResult.output;
+      await logger.chat(subResult.textStream);
+      const { skillId: detectedLevel2 } = await subResult.output;
 
-      if (detectedWeb !== secondaryBefore) {
-        logger.log(`💡 SUB-SKILL: ${secondaryBefore || "none"} -> ${detectedWeb || "none"}`);
-        if (secondaryBefore) await disable(secondaryBefore);
-        if (detectedWeb) await enable(detectedWeb);
-        context.secondarySkill = detectedWeb;
+      const currentLevel2 = context.level2Skill as string | null;
+      if (detectedLevel2 !== currentLevel2) {
+        logger.log(`  - SKILL L2: ${currentLevel2 || "none"} -> ${detectedLevel2 || "none"}`);
+        if (currentLevel2) await disable(currentLevel2);
+        if (detectedLevel2) await enable(detectedLevel2);
+        context.level2Skill = detectedLevel2;
       }
+    } else if (context.level2Skill) {
+      await disable(context.level2Skill as string);
+      context.level2Skill = null;
     }
 
-    const primaryAfter = context.primarySkill as string | null;
-    const secondaryAfter = context.secondarySkill as string | null;
-    if (primaryBefore === primaryAfter && secondaryBefore === secondaryAfter) return null;
+    const level1After = context.level1Skill as string | null;
+    const level2After = context.level2Skill as string | null;
+    if (level1Before === level1After && level2Before === level2After) return null;
 
     let instructions = "";
-    const primary = await get(primaryAfter as string);
-    const secondary = await get(secondaryAfter as string);
-    if (primary) instructions += `\n--- PRIMARY SKILL GUIDE (${primaryAfter}) ---\n${primary.content}\n`;
-    if (secondary) instructions += `\n--- SECONDARY SKILL GUIDE (${secondaryAfter}) ---\n${secondary.content}\n`;
+    const skill1 = await get(level1After as string);
+    const skill2 = await get(level2After as string);
+    if (skill1) instructions += `\n--- SKILL LEVEL 1 GUIDE (${level1After}) ---\n${skill1.content}\n`;
+    if (skill2) instructions += `\n--- SKILL LEVEL 2 GUIDE (${level2After}) ---\n${skill2.content}\n`;
     return instructions || null;
   }
 

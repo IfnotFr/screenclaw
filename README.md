@@ -49,40 +49,39 @@ Missions are task instructions that Screen Claw will perform periodically. They 
 
 ## Skills
 
-Screen Claw will automatically load relevant **App Skills** for the visible application using `skills/app/SKILL.md` instructions and the `description` frontmatter field of each skill in `skills/app`.
+Skills are context guides loaded automatically based on what is visible on screen. They are organized in two levels.
 
-### App Skills
+### Level 1 Skills — App
 
-Browser example: `skills/app/browser/SKILL.md`
+At each cycle, Screen Claw detects the active application by matching the screen against all skills in `skills/app/`. The detection guide is `skills/app/SKILL.md`.
+
+`skills/app/browser/SKILL.md`
 
 ```
 ---
-description: "A web browser window (Chrome, Brave, Firefox, etc.) displaying websites. Features an address bar at the top and navigation buttons."
-sub-skills: "website"
+description: "A web browser window (Chrome, Brave, Firefox, etc.) displaying websites."
+subtype: website
 ---
 
 Use keyboard alt+left to go back, never use the back button.
 ```
 
-### Sub Skills
+### Level 2 Skills — Subtype
 
-If an app skill has a `sub-skills` field, Screen Claw will automatically load the corresponding sub skills using `skills/<category>/SKILL.md` instructions and the `description` frontmatter field of each skill in `skills/<category>`.
+If a Level 1 skill declares a `subtype` field, Screen Claw runs a second detection pass in the `skills/<subtype>/` category. The detection guide is `skills/<subtype>/SKILL.md`.
 
-Website example: `skills/website/gmail/SKILL.md`
+`skills/website/google-gmail/SKILL.md`
 
 ```
 ---
-description: "Gmail: Left sidebar with 'Compose' button and folders. Central list of emails with checkboxes and stars. Top 'Search mail' bar"
+description: "Gmail: Left sidebar with 'Compose' button and folders. Central list of emails."
 ---
 
 ## Creating an email
-
-1. Click on the compose button in the top left corner, a small windows on the bottom right will appear.
-2. The "To" field is automatically focused, so directly write the target email address.
-3. Press tab to move to the "Subject" field and write the subject of the email.
-4. Press tab to move to the "Body" field and write the body of the email.
-5. Click on the send button in the bottom right corner.
+...
 ```
+
+This system is generic: a `game/some-game` skill could declare `subtype: game-layout` to load layout-specific guides depending on whether the player is in-game or in an inventory menu.
 
 ## Environment variables
 

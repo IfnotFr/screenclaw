@@ -1,5 +1,6 @@
 ---
 description: "A web browser window (Chrome, Brave, Firefox, etc.) displaying websites. Features an address bar at the top and navigation buttons."
+subtype: website
 ---
 
 # Web Browser Expert Guide 🌐
